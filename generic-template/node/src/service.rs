@@ -35,7 +35,18 @@ use sc_transaction_pool_api::OffchainTransactionPoolFactory;
 use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
 
-type ParachainExecutor = WasmExecutor<ParachainHostFunctions>;
+#[cfg(not(feature = "runtime-benchmarks"))]
+type HostFunctions =
+    (sp_io::SubstrateHostFunctions, cumulus_client_service::storage_proof_size::HostFunctions);
+
+#[cfg(feature = "runtime-benchmarks")]
+type HostFunctions = (
+    sp_io::SubstrateHostFunctions,
+    cumulus_client_service::storage_proof_size::HostFunctions,
+    frame_benchmarking::benchmarking::HostFunctions,
+);
+
+type ParachainExecutor = WasmExecutor<HostFunctions>;
 
 type ParachainClient = TFullClient<Block, RuntimeApi, ParachainExecutor>;
 
